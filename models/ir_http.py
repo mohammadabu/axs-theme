@@ -20,18 +20,17 @@
 #
 ###################################################################################
 
-from odoo import api, SUPERUSER_ID
-
-from . import models
-
-#----------------------------------------------------------
-# Hooks
-#----------------------------------------------------------
+from odoo import models
+from odoo.http import request
 
 
-XML_ID = "muk_web_theme._assets_primary_variables"
-SCSS_URL = "/muk_web_theme/static/src/scss/colors.scss"
+class IrHttp(models.AbstractModel):
+    
+    _inherit = 'ir.http'
 
-def _uninstall_reset_changes(cr, registry):
-    env = api.Environment(cr, SUPERUSER_ID, {})
-    env['muk_utils.scss_editor'].reset_values(SCSS_URL, XML_ID)
+    def session_info(self):
+        result = super(IrHttp, self).session_info()
+        params = request.env['ir.config_parameter'].with_user(self.env.ref('base.user_admin'))
+        blend_mode = params.get_param('muk_web_theme.background_blend_mode')
+        result.update(muk_web_theme_background_blend_mode=blend_mode or 'normal')
+        return result
